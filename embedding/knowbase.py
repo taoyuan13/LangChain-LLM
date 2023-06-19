@@ -90,6 +90,7 @@ class KnowledgeBase:
                                     filepath: str or List[str],
                                     vs_path: str or os.PathLike = None,
                                     sentence_size=SENTENCE_SIZE):
+        # 1. 加载文件
         loaded_files = []
         failed_files = []
         if isinstance(filepath, str):
@@ -108,6 +109,7 @@ class KnowledgeBase:
                     return None
             elif os.path.isdir(filepath):
                 docs = []
+                # tqdm: 进度条功能; tree: 找到filepath目录下所有文件
                 for fullfilepath, file in tqdm(zip(*tree(filepath, ignore_dir_names=['tmp_files'])), desc="加载文件"):
                     try:
                         docs += load_file(fullfilepath, sentence_size)
@@ -130,9 +132,11 @@ class KnowledgeBase:
                 except Exception as e:
                     logger.error(e)
                     logger.info(f"{file} 未能成功加载")
+        # 2. 向量化
         if len(docs) > 0:
             logger.info("文件加载完毕，正在生成向量库")
             if vs_path and os.path.isdir(vs_path) and "index.faiss" in os.listdir(vs_path):
+                # 加载现有的向量库
                 vector_store = load_vector_store(vs_path, self.embeddings)
                 vector_store.add_documents(docs)
                 torch_gc()
@@ -141,6 +145,7 @@ class KnowledgeBase:
                     vs_path = os.path.join(KB_ROOT_PATH,
                                            f"""{"".join(lazy_pinyin(os.path.splitext(file)[0]))}_FAISS_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}""",
                                            "vector_store")
+                # 生成新的向量库
                 vector_store = MyFAISS.from_documents(docs, self.embeddings)  # docs 为Document列表
                 torch_gc()
 
