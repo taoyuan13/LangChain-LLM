@@ -245,12 +245,12 @@ with gr.Blocks(css=block_css, theme=gr.themes.Default(**default_theme_args)) as 
         fn=refresh_vs_list,
         inputs=None,
         outputs=[select_vs],
-        queue=True,
+        # queue=True,
         show_progress=False,
     )
 
 (demo
- .queue(concurrency_count=3)
+ # .queue(concurrency_count=3)  控制处理速率
  .launch(server_name='localhost',
          server_port=7861,
          show_api=False,
